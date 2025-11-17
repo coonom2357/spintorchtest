@@ -3,3 +3,9 @@ numpy>=1.24.0
 matplotlib>=3.7.0
 numba>=0.57.0
 scikit-image>=0.21.0
+numpy
+torch
+pandas
+numba
+scikit-image
+matplotlib
