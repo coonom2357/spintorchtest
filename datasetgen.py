@@ -10,13 +10,7 @@ from randvec import randvec
 
 import warnings
 warnings.filterwarnings("ignore", message=".*Casting complex values to real.*")
-dsize = 300
-fsklist = []
-for i in range(dsize):
-    vec = randvec(3, min_value=1, max_value=20)
-    fsk_wave, fsk_t = fsk_encode(vec, samp_per_symbol=100, freq_min=1, freq_max=10)
-    fsklist.append(fsk_wave)
-fsk_dataset = np.array(fsklist)
+
 """Parameters"""
 dx = 50e-9      # discretization (m)
 dy = 50e-9      # discretization (m)
@@ -72,9 +66,12 @@ X = Bt*torch.sin(2*np.pi*f1*t)  # sinusoid signal at f1 frequency, Bt amplitude
 INPUTS = X  # here we could cat multiple inputs
 OUTPUTS = torch.tensor([int(Np/2)]).to(dev) # desired output
 
+dsize = 300
+fsklist = []
+for i in range(dsize):
+    vec = randvec(3, min_value=1, max_value=20)
+    fsk_wave, fsk_t = fsk_encode(vec, samp_per_symbol=100, freq_min=1, freq_max=10)
+    INPUTS = Bt*torch.tensor(fsk_wave, device=dev).unsqueeze(0).unsqueeze(2)
+    fsklist.append(fsk_wave)
 
-tic()
-u = model(INPUTS).sum(dim=1)
-stat_cuda('after forward')
-stat_cuda('after backward')
-toc()   
+fsk_dataset = np.array(fsklist)
