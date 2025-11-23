@@ -54,7 +54,7 @@ for p in range(Np):
     probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
 model = spintorch.MMSolver(geom, dt, [src], probes)
 
-dev = torch.device('cuda')  # 'cuda' or 'cpu'
+dev = torch.device('cpu')  # 'cuda' or 'cpu'
 print('Running on', dev)
 model.to(dev)   # sending model to GPU/CPU
 
@@ -62,16 +62,35 @@ model.to(dev)   # sending model to GPU/CPU
 '''Define the source signal and output goal'''
 t = torch.arange(0, timesteps*dt, dt, device=dev).unsqueeze(0).unsqueeze(2) # time vector
 X = Bt*torch.sin(2*np.pi*f1*t)  # sinusoid signal at f1 frequency, Bt amplitude
+'''Generate FSK dataset'''
 
-INPUTS = X  # here we could cat multiple inputs
-OUTPUTS = torch.tensor([int(Np/2)]).to(dev) # desired output
+dsize = 1  # number of samples to generate
+input_waves = []
+output_waves = []
+vectors = []
 
-dsize = 300
-fsklist = []
 for i in range(dsize):
     vec = randvec(3, min_value=1, max_value=20)
     fsk_wave, fsk_t = fsk_encode(vec, samp_per_symbol=100, freq_min=1, freq_max=10)
     INPUTS = Bt*torch.tensor(fsk_wave, device=dev).unsqueeze(0).unsqueeze(2)
-    fsklist.append(fsk_wave)
+    output = model(INPUTS)
+    
+    # Store the data
+    input_waves.append(INPUTS.squeeze())
+    output_waves.append(output.detach())
+    vectors.append(torch.tensor(vec))
+    
 
-fsk_dataset = np.array(fsklist)
+# Create dataset dictionary
+dataset = {
+    'input_waves': torch.stack(input_waves),      # Input FSK waves
+    'output_waves': torch.stack(output_waves),    # Model outputs
+    'vectors': torch.stack(vectors)               # Original vectors
+}
+
+# Save the dataset
+torch.save(dataset, savedir + 'fsk_dataset.pt')
+print(f"Dataset saved to {savedir}fsk_dataset.pt")
+print(f"Input shape: {dataset['input_waves'].shape}")
+print(f"Output shape: {dataset['output_waves'].shape}")
+print(dataset['output_waves'])

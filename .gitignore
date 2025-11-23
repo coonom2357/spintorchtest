@@ -1,3 +1,4 @@
 models/
 plots/
 spintorch/__pycache__/
+venv/

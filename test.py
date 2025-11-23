@@ -7,14 +7,28 @@ from spintorch.plot import wave_integrated, wave_snapshot
 from vecenc import fsk_encode, qam_encode
 from randvec import randvec
 
-import warnings
-warnings.filterwarnings("ignore", message=".*Casting complex values to real.*")
-dsize = 300
-fsklist = []
-for i in range(dsize):
-    vec = randvec(3, min_value=1, max_value=20)
-    fsk_wave, fsk_t = fsk_encode(vec, samp_per_symbol=100, freq_min=1, freq_max=10)
-    fsklist.append(fsk_wave)
-fsk_dataset = np.array(fsklist)
-print('FSK dataset shape:', fsk_dataset.shape)
-print('Sample FSK wave:', fsk_dataset[0])
+import matplotlib
+matplotlib.use('TkAgg')  # Use interactive backend
+import matplotlib.pyplot as plt
+
+dataset = torch.load('models/focus_Ms/fsk_dataset.pt')
+
+# Plot first input wave
+plt.figure(figsize=(10, 5))
+plt.plot(dataset['input_waves'][0].numpy(), alpha=0.7)
+plt.title('First Input FSK Wave')
+plt.xlabel('Time step')
+plt.ylabel('Amplitude')
+plt.tight_layout()
+plt.show()
+
+# Plot first output (all 3 probes)
+plt.figure(figsize=(10, 5))
+for i in range(3):
+    plt.plot(dataset['output_waves'][0, 0, :, i].numpy(), label=f'Probe {i+1}', alpha=0.7)
+plt.title('First Output Wave (3 Probes)')
+plt.xlabel('Time step')
+plt.ylabel('Intensity')
+plt.legend()
+plt.tight_layout()
+plt.show()
