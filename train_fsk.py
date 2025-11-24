@@ -1,6 +1,8 @@
 """Train a focusing model on FSK dataset"""
 import torch
 import os
+
+from tqdm import tqdm
 import spintorch
 import numpy as np
 from spintorch.utils import tic, toc, stat_cuda
@@ -25,7 +27,7 @@ dt = 20e-12     # timestep (s)
 timesteps = 600 # number of timesteps for wave propagation
 
 '''Directories'''
-basedir = 'backprop_Ms/'
+basedir = 'focus_Ms/'
 plotdir = 'plots/' + basedir
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
@@ -41,8 +43,8 @@ print(f"Loaded dataset with {len(dataset_dict['input_waves'])} samples")
 '''Create PyTorch Dataset'''
 class FSKDataset(Dataset):
     def __init__(self, dataset_dict, device):
-        # Input waves need to be shaped [batch, channels, timesteps]
-        self.inputs = dataset_dict['input_waves'].unsqueeze(1).to(device)  # Add channel dim
+        # Input waves need to be shaped [batch, timesteps, sources]
+        self.inputs = dataset_dict['input_waves'].unsqueeze(2).to(device)  # Add source dim at end
         self.outputs = dataset_dict['output_waves'].to(device)  # Target outputs from dataset
         self.vectors = dataset_dict['vectors'].to(device)
         
@@ -57,9 +59,12 @@ Ms_CoPt = 723e3 # saturation magnetization of the nanomagnets (A/m)
 r0, dr, dm, z_off = 15, 4, 2, 10  # starting pos, period, magnet size, z distance
 rx, ry = int((nx-2*r0)/dr), int((ny-2*r0)/dr+1)
 
-# Load geometry from dataset generation
+# Load geometry from dataset generation (or initialize new)
 rho = torch.load(savedir + 'geometry_rho.pt')
-geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0, 
+# Don't use the loaded rho directly - let the geometry create its own parameter
+# Or initialize fresh for training
+rho_init = torch.rand((rx, ry)) * 4 - 2  # Random initialization for training
+geom = spintorch.WaveGeometryArray(rho_init, (nx, ny), (dx, dy, dz), Ms, B0, 
                                     r0, dr, dm, z_off, rx, ry, Ms_CoPt)
 
 src = spintorch.WaveLineSource(10, 0, 10, ny-1, dim=2)
@@ -72,6 +77,11 @@ model = spintorch.MMSolver(geom, dt, [src], probes)
 dev = torch.device('cuda')  # 'cuda' or 'cpu'
 print('Running on', dev)
 model.to(dev)
+
+# Verify parameters have gradients enabled
+print("\nModel parameters:")
+for name, param in model.named_parameters():
+    print(f"{name}: requires_grad={param.requires_grad}, shape={param.shape}")
 
 '''Create DataLoader'''
 fsk_dataset = FSKDataset(dataset_dict, dev)
@@ -96,21 +106,21 @@ else:
     loss_iter = []
 
 '''Train the network'''
-num_epochs = 20
+num_epochs = 3
 tic()
 
-for epoch in range(epoch_init+1, epoch_init+1+num_epochs):
+for epoch in tqdm(range(epoch_init+1, epoch_init+1+num_epochs), desc="Training epochs", unit="epoch"):
     epoch_loss = 0
     num_batches = 0
     
-    for batch_idx, (inputs, target_outputs, vectors) in enumerate(dataloader):
+    for batch_idx, (inputs, target_outputs, vectors) in tqdm(enumerate(dataloader), total=len(dataloader), desc="Batches", unit="batch"):
         optimizer.zero_grad()
         
         # Process each sample in batch (model expects single samples)
         batch_predictions = []
         for i in range(inputs.size(0)):
-            input_wave = inputs[i].unsqueeze(0)  # [1, channels, timesteps]
-            u = model(input_wave).sum(dim=1)  # [1, timesteps, probes]
+            input_wave = inputs[i].unsqueeze(0)  # [1, timesteps, sources]
+            u = model(input_wave)  # [1, timesteps, probes] - keep all timesteps
             batch_predictions.append(u)
         
         # Stack batch predictions
