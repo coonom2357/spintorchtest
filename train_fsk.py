@@ -97,7 +97,7 @@ def mse_loss(predicted, target):
 '''Load checkpoint'''
 epoch_init = -1  # -1 = start from scratch
 if epoch_init >= 0:
-    checkpoint = torch.load(savedir + f'model_e{epoch_init}.pt')
+    checkpoint = torch.load(savedir + f'model_fsk_e{epoch_init}.pt')
     epoch = checkpoint['epoch']
     loss_iter = checkpoint['loss_iter']
     model.load_state_dict(checkpoint['model_state_dict'])
