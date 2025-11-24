@@ -169,7 +169,8 @@ with torch.no_grad():
     spintorch.plot.plot_output(u[0,], 2, epoch, plotdir)  # Predicted output
     spintorch.plot.geometry(model, epoch=epoch, plotdir=plotdir)
     
-    mz = torch.stack(model.m_history, 1)[0,:,2,] - model.m0[0,2,].unsqueeze(0).cpu()
+    # Stack history and move to CPU for plotting
+    mz = torch.stack(model.m_history, 1).cpu()[0,:,2,] - model.m0[0,2,].unsqueeze(0).cpu()
     wave_snapshot(model, mz[timesteps-1], (plotdir+f'snapshot_time{timesteps}_final.png'), r"$m_z$")
     wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+f'snapshot_time{int(timesteps/2)}_final.png'), r"$m_z$")
     wave_integrated(model, mz, (plotdir+f'integrated_final.png'))
