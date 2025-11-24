@@ -8,3 +8,4 @@ matplotlib
 numba
 scikit-image
 pandas
+tqdm

@@ -15,7 +15,7 @@ dataset = torch.load('models/focus_Ms/fsk_dataset.pt')
 
 # Plot first input wave
 plt.figure(figsize=(10, 5))
-plt.plot(dataset['input_waves'][0].numpy(), alpha=0.7)
+plt.plot(dataset['input_waves'][0].cpu().numpy(), alpha=0.7)
 plt.title('First Input FSK Wave')
 plt.xlabel('Time step')
 plt.ylabel('Amplitude')
@@ -25,7 +25,7 @@ plt.show()
 # Plot first output (all 3 probes)
 plt.figure(figsize=(10, 5))
 for i in range(3):
-    plt.plot(dataset['output_waves'][0, 0, :, i].numpy(), label=f'Probe {i+1}', alpha=0.7)
+    plt.plot(dataset['output_waves'][0, 0, :, i].cpu().numpy(), label=f'Probe {i+1}', alpha=0.7)
 plt.title('First Output Wave (3 Probes)')
 plt.xlabel('Time step')
 plt.ylabel('Intensity')

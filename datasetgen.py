@@ -7,7 +7,7 @@ from spintorch.utils import tic, toc, stat_cuda
 from spintorch.plot import wave_integrated, wave_snapshot
 from vecenc import fsk_encode, qam_encode
 from randvec import randvec
-
+from tqdm import tqdm
 import warnings
 warnings.filterwarnings("ignore", message=".*Casting complex values to real.*")
 
@@ -54,22 +54,18 @@ for p in range(Np):
     probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
 model = spintorch.MMSolver(geom, dt, [src], probes)
 
-dev = torch.device('cpu')  # 'cuda' or 'cpu'
+dev = torch.device('cuda')  # 'cuda' or 'cpu'
 print('Running on', dev)
 model.to(dev)   # sending model to GPU/CPU
 
-
-'''Define the source signal and output goal'''
-t = torch.arange(0, timesteps*dt, dt, device=dev).unsqueeze(0).unsqueeze(2) # time vector
-X = Bt*torch.sin(2*np.pi*f1*t)  # sinusoid signal at f1 frequency, Bt amplitude
 '''Generate FSK dataset'''
 
-dsize = 1  # number of samples to generate
+dsize = 200  # number of samples to generate
 input_waves = []
 output_waves = []
 vectors = []
 
-for i in range(dsize):
+for i in tqdm(range(dsize), desc="Generating dataset", unit="sample"):
     vec = randvec(3, min_value=1, max_value=20)
     fsk_wave, fsk_t = fsk_encode(vec, samp_per_symbol=100, freq_min=1, freq_max=10)
     INPUTS = Bt*torch.tensor(fsk_wave, device=dev).unsqueeze(0).unsqueeze(2)
@@ -94,3 +90,4 @@ print(f"Dataset saved to {savedir}fsk_dataset.pt")
 print(f"Input shape: {dataset['input_waves'].shape}")
 print(f"Output shape: {dataset['output_waves'].shape}")
 print(dataset['output_waves'])
+torch.save(geom.rho, savedir + 'geometry_rho.pt')
