@@ -66,6 +66,7 @@ output_waves = []
 vectors = []
 
 for i in tqdm(range(dsize), desc="Generating dataset", unit="sample"):
+    model.retain_history = True
     vec = randvec(3, min_value=1, max_value=20)
     fsk_wave, fsk_t = fsk_encode(vec, samp_per_symbol=100, freq_min=1, freq_max=10)
     INPUTS = Bt*torch.tensor(fsk_wave, device=dev).unsqueeze(0).unsqueeze(2)
@@ -91,3 +92,12 @@ print(f"Input shape: {dataset['input_waves'].shape}")
 print(f"Output shape: {dataset['output_waves'].shape}")
 print(dataset['output_waves'])
 torch.save(geom.rho, savedir + 'geometry_rho.pt')
+
+if model.retain_history:
+        with torch.no_grad():
+            spintorch.plot.geometry(model, epoch=dsize, plotdir=plotdir)
+            mz = torch.stack(model.m_history, 1)[0,:,2,]-model.m0[0,2,].unsqueeze(0).cpu()
+            wave_snapshot(model, mz[timesteps-1], (plotdir+f'snapshot_time{timesteps}_epoch{dsize}.png'),r"$m_z$")
+            wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+f'snapshot_time{int(timesteps/2)}_epoch{dsize}.png'),r"$m_z$")
+            wave_integrated(model, mz, (plotdir+f'integrated_epoch{dsize}.png'))
+

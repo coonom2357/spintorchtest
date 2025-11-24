@@ -62,7 +62,6 @@ model.to(dev)   # sending model to GPU/CPU
 '''Define the source signal and output goal'''
 t = torch.arange(0, timesteps*dt, dt, device=dev).unsqueeze(0).unsqueeze(2) # time vector
 X = Bt*torch.sin(2*np.pi*f1*t)  # sinusoid signal at f1 frequency, Bt amplitude
-fsk_wave_input = torch.load('models/focus_Ms/fsk_dataset.pt')['input_waves'][0].unsqueeze(0).unsqueeze(2).to(dev)
 INPUTS = X  # here we could cat multiple inputs
 OUTPUTS = torch.tensor([int(Np/2)]).to(dev) # desired output
 
@@ -77,7 +76,7 @@ def my_loss(output, target_index):
 '''Load checkpoint'''
 epoch = epoch_init = -1 # select previous checkpoint (-1 = don't use checkpoint)
 if epoch_init>=0:
-    checkpoint = torch.load(savedir + 'model_e%d.pt' % (epoch_init))
+    checkpoint = torch.load(savedir + f'model_e{epoch_init}.pt')
     epoch = checkpoint['epoch']
     loss_iter = checkpoint['loss_iter']
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -99,7 +98,7 @@ for epoch in range(epoch_init+1, 10):
     loss.backward()
     optimizer.step()
     stat_cuda('after backward')
-    print("Epoch finished: %d -- Loss: %.6f" % (epoch, loss))
+    print(f"Epoch finished: {epoch} -- Loss: {loss:.6f}")
     toc()   
 
     '''Save model checkpoint'''
@@ -108,16 +107,16 @@ for epoch in range(epoch_init+1, 10):
                 'loss_iter': loss_iter,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict()
-                }, savedir + 'model_e%d.pt' % (epoch))
+                }, savedir + f'model_e{epoch}.pt')
     
     '''Plot spin-wave propagation'''
     if model.retain_history:
         with torch.no_grad():
             spintorch.plot.geometry(model, epoch=epoch, plotdir=plotdir)
             mz = torch.stack(model.m_history, 1)[0,:,2,]-model.m0[0,2,].unsqueeze(0).cpu()
-            wave_snapshot(model, mz[timesteps-1], (plotdir+'snapshot_time%d_epoch%d.png' % (timesteps,epoch)),r"$m_z$")
-            wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+'snapshot_time%d_epoch%d.png' % (int(timesteps/2),epoch)),r"$m_z$")
-            wave_integrated(model, mz, (plotdir+'integrated_epoch%d.png' % (epoch)))
+            wave_snapshot(model, mz[timesteps-1], (plotdir+f'snapshot_time{timesteps}_epoch{epoch}.png'),r"$m_z$")
+            wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+f'snapshot_time{int(timesteps/2)}_epoch{epoch}.png'),r"$m_z$")
+            wave_integrated(model, mz, (plotdir+f'integrated_epoch{epoch}.png'))
 
 
   
