@@ -55,27 +55,27 @@ class MMSolver(nn.Module):
         return cat(outputs, dim=1)
 
     def run(self, m, B_ext, Msat, signal):
-        """Run the simulation in multiple stages (checkpointing disabled)"""
+        """Run the simulation in multiple stages (checkpointing enabled)"""
         outputs = []
         N = int(np.sqrt(signal.size()[1])) # number of stages 
         for stage, sig in enumerate(signal.chunk(N, dim=1)):
-            # output, m = checkpoint(self.run_stage, m, B_ext, Msat, sig, use_reentrant=False)
-            output, m = self.run_stage(m, B_ext, Msat, sig)  # Direct call, no checkpointing
+            output, m = checkpoint(self.run_stage, m, B_ext, Msat, sig, use_reentrant=False)
+            # output, m = self.run_stage(m, B_ext, Msat, sig)  # Direct call, no checkpointing
             outputs.append(output)
         return outputs
         
     def run_stage(self, m, B_ext, Msat, signal):
-        """Run a subset of timesteps (checkpointing disabled)"""
+        """Run a subset of timesteps (checkpointing enabled)"""
         outputs = empty(0,device=self.dt.device)
         # Loop through the signal 
         for sig in signal.split(1,dim=1):
             B_ext = self.inject_sources(B_ext, sig)
-            # Propagate the fields (checkpointing disabled)
-            # m = checkpoint(self.rk4_step_LLG, m, B_ext, Msat, use_reentrant=False)
-            m = self.rk4_step_LLG(m, B_ext, Msat)  # Direct call
-            # Measure the outputs (checkpointing disabled)
-            # outputs = checkpoint(self.measure_probes, m, Msat, outputs, use_reentrant=False)
-            outputs = self.measure_probes(m, Msat, outputs)  # Direct call
+            # Propagate the fields (checkpointing enabled)
+            m = checkpoint(self.rk4_step_LLG, m, B_ext, Msat, use_reentrant=False)
+            # m = self.rk4_step_LLG(m, B_ext, Msat)  # Direct call
+            # Measure the outputs (checkpointing enabled)
+            outputs = checkpoint(self.measure_probes, m, Msat, outputs, use_reentrant=False)
+            # outputs = self.measure_probes(m, Msat, outputs)  # Direct call
             if self.retain_history and self.fwd:
                 self.m_history.append(m.detach().cpu())
         return outputs, m

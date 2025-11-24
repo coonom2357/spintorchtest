@@ -3,3 +3,6 @@ plots/
 spintorch/__pycache__/
 venv/
 __pycache__/
+.vscode/
+scripts.txt/
+slurm/
