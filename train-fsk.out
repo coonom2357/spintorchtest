@@ -1,0 +1,79 @@
+Loaded dataset with 200 samples
+Running on cuda
+
+Model parameters:
+geom.rho: requires_grad=True, shape=torch.Size([17, 18])
+geom.convolver.weight: requires_grad=False, shape=torch.Size([3, 1, 2, 2])
+exch_2D.LAPLACE.weight: requires_grad=False, shape=torch.Size([3, 1, 3, 3])
+Epoch 0, Batch 0/50, Loss: 60339624.000000
+Epoch 0, Batch 10/50, Loss: 245094128.000000
+Epoch 0, Batch 20/50, Loss: 56099044.000000
+Epoch 0, Batch 30/50, Loss: 51970952.000000
+Epoch 0, Batch 40/50, Loss: 41414540.000000
+Epoch 0 finished -- Avg Loss: 77905680.240000
+Elapsed time [1;32m805.87 s[0m, (dt = [1;34m805.87 s[0m)
+Checkpoint saved at epoch 0
+Epoch 1, Batch 0/50, Loss: 45141256.000000
+Epoch 1, Batch 10/50, Loss: 175570912.000000
+Epoch 1, Batch 20/50, Loss: 14642222.000000
+Epoch 1, Batch 30/50, Loss: 80679424.000000
+Epoch 1, Batch 40/50, Loss: 64675160.000000
+Epoch 1 finished -- Avg Loss: 68892914.990000
+Elapsed time [1;32m1602.73 s[0m, (dt = [1;34m796.86 s[0m)
+Epoch 2, Batch 0/50, Loss: 43630812.000000
+Epoch 2, Batch 10/50, Loss: 83546208.000000
+Epoch 2, Batch 20/50, Loss: 61354232.000000
+Epoch 2, Batch 30/50, Loss: 119731184.000000
+Epoch 2, Batch 40/50, Loss: 59523676.000000
+Epoch 2 finished -- Avg Loss: 70112261.925000
+Elapsed time [1;32m2416.18 s[0m, (dt = [1;34m813.45 s[0m)
+Epoch 3, Batch 0/50, Loss: 67526272.000000
+Epoch 3, Batch 10/50, Loss: 22940108.000000
+Epoch 3, Batch 20/50, Loss: 44770848.000000
+Epoch 3, Batch 30/50, Loss: 10527458.000000
+Epoch 3, Batch 40/50, Loss: 10416992.000000
+Epoch 3 finished -- Avg Loss: 42147718.920000
+Elapsed time [1;32m3230.11 s[0m, (dt = [1;34m813.93 s[0m)
+Epoch 4, Batch 0/50, Loss: 51982436.000000
+Epoch 4, Batch 10/50, Loss: 117338592.000000
+Epoch 4, Batch 20/50, Loss: 50867712.000000
+Epoch 4, Batch 30/50, Loss: 127759728.000000
+Epoch 4, Batch 40/50, Loss: 35207716.000000
+Epoch 4 finished -- Avg Loss: 44415198.580000
+Elapsed time [1;32m4026.11 s[0m, (dt = [1;34m796.00 s[0m)
+Epoch 5, Batch 0/50, Loss: 37223864.000000
+Epoch 5, Batch 10/50, Loss: 51606420.000000
+Epoch 5, Batch 20/50, Loss: 1541162.375000
+Epoch 5, Batch 30/50, Loss: 52696360.000000
+Epoch 5, Batch 40/50, Loss: 99084056.000000
+Epoch 5 finished -- Avg Loss: 51131285.177500
+Elapsed time [1;32m4832.30 s[0m, (dt = [1;34m806.19 s[0m)
+Checkpoint saved at epoch 5
+Epoch 6, Batch 0/50, Loss: 106124216.000000
+Epoch 6, Batch 10/50, Loss: 139036944.000000
+Epoch 6, Batch 20/50, Loss: 19706168.000000
+Epoch 6, Batch 30/50, Loss: 69636656.000000
+Epoch 6, Batch 40/50, Loss: 71242744.000000
+Epoch 6 finished -- Avg Loss: 80220166.920000
+Elapsed time [1;32m5629.46 s[0m, (dt = [1;34m797.16 s[0m)
+Epoch 7, Batch 0/50, Loss: 68186256.000000
+Epoch 7, Batch 10/50, Loss: 37451848.000000
+Epoch 7, Batch 20/50, Loss: 48195388.000000
+Epoch 7, Batch 30/50, Loss: 70687224.000000
+Epoch 7, Batch 40/50, Loss: 54611040.000000
+Epoch 7 finished -- Avg Loss: 60481026.275000
+Elapsed time [1;32m6421.12 s[0m, (dt = [1;34m791.66 s[0m)
+Epoch 8, Batch 0/50, Loss: 51098184.000000
+Epoch 8, Batch 10/50, Loss: 83473512.000000
+Epoch 8, Batch 20/50, Loss: 63924572.000000
+Epoch 8, Batch 30/50, Loss: 99306752.000000
+Epoch 8, Batch 40/50, Loss: 51787576.000000
+Epoch 8 finished -- Avg Loss: 69319392.950000
+Elapsed time [1;32m7209.74 s[0m, (dt = [1;34m788.62 s[0m)
+Epoch 9, Batch 0/50, Loss: 48743320.000000
+Epoch 9, Batch 10/50, Loss: 76252632.000000
+Epoch 9, Batch 20/50, Loss: 28140918.000000
+Epoch 9, Batch 30/50, Loss: 39511332.000000
+Epoch 9, Batch 40/50, Loss: 46212328.000000
+Epoch 9 finished -- Avg Loss: 56227375.090000
+Elapsed time [1;32m7996.84 s[0m, (dt = [1;34m787.10 s[0m)
