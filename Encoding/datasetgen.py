@@ -47,7 +47,7 @@ geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0,
 # geom = spintorch.WaveGeometryMs((nx, ny), (dx, dy, dz), Ms, B0)
 src = spintorch.WaveLineSource(10, 0, 10, ny-1, dim=2)
 probes = []
-Np = 3  # number of probes
+Np = 2  # number of probes
 for p in range(Np):
     probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
 model = spintorch.MMSolver(geom, dt, [src], probes)
@@ -95,11 +95,11 @@ print(f"Output shape: {dataset['output_waves'].shape}")
 print(dataset['output_waves'])
 torch.save(geom.rho, savedir + 'geometry_rho.pt')
 
-if model.retain_history:
-        with torch.no_grad():
-            spintorch.plot.geometry(model, epoch=dsize, plotdir=plotdir)
-            mz = torch.stack(model.m_history, 1)[0,:,2,]-model.m0[0,2,].unsqueeze(0).cpu()
-            wave_snapshot(model, mz[timesteps-1], (plotdir+f'snapshot_time{timesteps}_epoch{dsize}.png'),r"$m_z$")
-            wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+f'snapshot_time{int(timesteps/2)}_epoch{dsize}.png'),r"$m_z$")
-            wave_integrated(model, mz, (plotdir+f'integrated_epoch{dsize}.png'))
+# if model.retain_history:
+#         with torch.no_grad():
+#             spintorch.plot.geometry(model, epoch=dsize, plotdir=plotdir)
+#             mz = torch.stack(model.m_history, 1)[0,:,2,]-model.m0[0,2,].unsqueeze(0).cpu()
+#             wave_snapshot(model, mz[timesteps-1], (plotdir+f'snapshot_time{timesteps}_epoch{dsize}.png'),r"$m_z$")
+#             wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+f'snapshot_time{int(timesteps/2)}_epoch{dsize}.png'),r"$m_z$")
+#             wave_integrated(model, mz, (plotdir+f'integrated_epoch{dsize}.png'))
 
