@@ -6,3 +6,5 @@ __pycache__/
 .vscode/
 scripts.txt/
 slurm/
+Fsk_train1/
+2x3train/
