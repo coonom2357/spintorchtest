@@ -12,33 +12,18 @@ from torch.utils.data import Dataset, DataLoader
 import warnings
 warnings.filterwarnings("ignore", message=".*Casting complex values to real.*")
 
-"""Parameters"""
 dx = 50e-9      # discretization (m)
 dy = 50e-9      # discretization (m)
 dz = 20e-9      # discretization (m)
-nx = 100        # size x    (cells)
-ny = 100        # size y    (cells)
-
+nx = 30        # size x    (cells)
+ny = 30        # size y    (cells)
 Ms = 140e3      # saturation magnetization (A/m)
 B0 = 60e-3      # bias field (T)
 Bt = 1e-3       # excitation field amplitude (T)
 
 dt = 20e-12     # timestep (s)
-timesteps = 600 # number of timesteps for wave propagation
-
-'''Directories'''
-basedir = 'focus_Ms/'
-plotdir = 'plots/' + basedir
-if not os.path.isdir(plotdir):
-    os.makedirs(plotdir)
-savedir = 'models/' + basedir
-if not os.path.isdir(savedir):
-    os.makedirs(savedir)
-
-'''Load dataset'''
-dataset_path = savedir + 'fsk_dataset.pt'
-dataset_dict = torch.load(dataset_path)
-print(f"Loaded dataset with {len(dataset_dict['input_waves'])} samples")
+f1 = 4e9        # source frequency (Hz)
+timesteps = 300 # number of timesteps for wave propagation
 
 '''Create PyTorch Dataset'''
 class FSKDataset(Dataset):
@@ -53,30 +38,38 @@ class FSKDataset(Dataset):
     
     def __getitem__(self, idx):
         return self.inputs[idx], self.outputs[idx], self.vectors[idx]
+    
+'''Directories'''
+basedir = '2x3train/'
+plotdir = 'plots/' + basedir
+if not os.path.isdir(plotdir):
+    os.makedirs(plotdir)
+savedir = basedir
+if not os.path.isdir(savedir):
+    os.makedirs(savedir)    
 
 '''Geometry, sources, probes, model definitions'''
+## Here are three geometry modules initialized, just uncomment one of them to try:
 Ms_CoPt = 723e3 # saturation magnetization of the nanomagnets (A/m)
-r0, dr, dm, z_off = 15, 4, 2, 10  # starting pos, period, magnet size, z distance
+r0, dr, dm, z_off = 10, 5, 2, 10  # starting pos, period, magnet size, z distance
 rx, ry = int((nx-2*r0)/dr), int((ny-2*r0)/dr+1)
-
-# Load geometry from dataset generation (or initialize new)
-rho = torch.load(savedir + 'geometry_rho.pt')
-# Don't use the loaded rho directly - let the geometry create its own parameter
-# Or initialize fresh for training
-rho_init = torch.rand((rx, ry)) * 4 - 2  # Random initialization for training
-geom = spintorch.WaveGeometryArray(rho_init, (nx, ny), (dx, dy, dz), Ms, B0, 
+print (rx, ry)
+rho = torch.rand((rx, ry))*4 -2  # Design parameter array
+geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0, 
                                     r0, dr, dm, z_off, rx, ry, Ms_CoPt)
-
-src = spintorch.WaveLineSource(10, 0, 10, ny-1, dim=2)
+# B1 = 50e-3      # training field multiplier (T)
+# geom = spintorch.WaveGeometryFreeForm((nx, ny), (dx, dy, dz), B0, B1, Ms)
+# geom = spintorch.WaveGeometryMs((nx, ny), (dx, dy, dz), Ms, B0)
+src = spintorch.WaveLineSource(5, 0, 5, ny-1, dim=2)
 probes = []
-Np = 3  # number of probes
+Np = 2  # number of probes
 for p in range(Np):
-    probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
+    probes.append(spintorch.WaveIntensityProbeDisk(int(nx*.94), int(ny*(p+1)/(Np+1)), 2))
 model = spintorch.MMSolver(geom, dt, [src], probes)
-
+spintorch.plot.geometry(model, epoch=0, plotdir=plotdir)
 dev = torch.device('cuda')  # 'cuda' or 'cpu'
 print('Running on', dev)
-model.to(dev)
+model.to(dev)   # sending model to GPU/CPU
 
 # Verify parameters have gradients enabled
 print("\nModel parameters:")
@@ -84,7 +77,7 @@ for name, param in model.named_parameters():
     print(f"{name}: requires_grad={param.requires_grad}, shape={param.shape}")
 
 '''Create DataLoader'''
-fsk_dataset = FSKDataset(dataset_dict, dev)
+fsk_dataset = FSKDataset(torch.load('2x3train/fsk_dataset.pt'), dev)
 dataloader = DataLoader(fsk_dataset, batch_size=4, shuffle=True)
 
 '''Define optimizer and loss function'''
@@ -106,7 +99,7 @@ else:
     loss_iter = []
 
 '''Train the network'''
-num_epochs = 10
+num_epochs = 20
 tic()
 
 for epoch in tqdm(range(epoch_init+1, epoch_init+1+num_epochs), desc="Training epochs", unit="epoch"):

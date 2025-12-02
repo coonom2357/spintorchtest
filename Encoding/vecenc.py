@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def fsk_encode(vector, samp_per_symbol=100, freq_min=1, freq_max=10):
+def fsk_encode(vector, samp_per_symbol=100, freq_min=None, freq_max=None):
     """
     Frequency Shift Keying (FSK) encoding of a vector.
     Each vector element maps to a unique frequency.
@@ -112,7 +112,7 @@ def visualize_vector_encoding(vector):
     ax1.grid(True, alpha=0.3)
     
     # Plot FSK encoding
-    fsk_signal, t_fsk = fsk_encode(vector)
+    fsk_signal, t_fsk = fsk_encode(vector, freq_min=1, freq_max=10)
     ax2.plot(t_fsk, fsk_signal, color='blue', linewidth=0.8)
     ax2.set_title('FSK (Frequency Shift Keying) Encoding')
     ax2.set_xlabel('Time')
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     print("\nEncoding vector...")
     
     # FSK encoding
-    fsk_signal, t_fsk = fsk_encode(test_vector)
+    fsk_signal, t_fsk = fsk_encode(test_vector,freq_max=5, freq_min=2)
     print(f"FSK signal shape: {fsk_signal.shape}")
     
     # QAM encoding
