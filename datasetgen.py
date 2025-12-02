@@ -50,7 +50,7 @@ src = spintorch.WaveLineSource(5, 0, 5, ny-1, dim=2)
 probes = []
 Np = 2  # number of probes
 for p in range(Np):
-    probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
+    probes.append(spintorch.WaveIntensityProbeDisk(int(nx*.94), int(ny*(p+1)/(Np+1)), 2))
 model = spintorch.MMSolver(geom, dt, [src], probes)
 spintorch.plot.geometry(model, epoch=0, plotdir=plotdir)
 # dev = torch.device('cuda')  # 'cuda' or 'cpu'

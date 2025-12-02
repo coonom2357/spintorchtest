@@ -51,18 +51,21 @@ def _plot_sources(sources, ax):
         markers.append(marker)
     return markers
 
-def _plot_nodes(model, ax):
+def _plot_nodes(geom, ax):
     """Plot nanomagnet array nodes (only for WaveGeometryArray)"""
     markers = []
     # Only plot nodes if using WaveGeometryArray geometry
-    if not isinstance(model.geom, WaveGeometryArray):
+    if not isinstance(geom, WaveGeometryArray):
         return markers
     
-    for i in range(model.geom.rx):
-        for j in range(model.geom.ry):
-            x, y = model.geom.coordinates(i, j)
-            if model.geom.rho[i, j] < 0:
-                marker, = ax.plot(x, y, '.', markeredgecolor='none', markerfacecolor='b', markersize=2, alpha=0.8)
+    for i in range(geom.rx):
+        for j in range(geom.ry):
+            x, y = geom.coordinates(i, j)
+            if geom.rho[i, j] < 0:
+                marker, = ax.plot(x, y, 'o', markeredgecolor='none', markerfacecolor='b', markersize=4, alpha=0.8)
+                markers.append(marker)
+            else:
+                marker, = ax.plot(x, y, 'o', markeredgecolor='none', markerfacecolor='r', markersize=4, alpha=0.8)
                 markers.append(marker)
     return markers
 
@@ -100,7 +103,7 @@ def geometry(model, ax=None, outline=False, outline_pml=True, epoch=0, plotdir='
 
     markers += _plot_probes(probes, ax)
     markers += _plot_sources(sources, ax)
-    markers += _plot_nodes(model.geom, ax)
+    markers += _plot_nodes(geom, ax)
         
     if plotdir:
         fig.savefig(plotdir+'geometry_epoch%d.png' % (epoch))
