@@ -86,6 +86,12 @@ class WaveGeometryArray(WaveGeometry):
         self.register_buffer("B", zeros((3,)+dim))
         self.B[1,] += self.B0
 
+    def coordinates(self, i, j):
+        """Calculate pixel coordinates for array node at index (i, j)"""
+        x = self.r0 + i * self.dr
+        y = self.r0 + j * self.dr
+        return x, y
+
     def forward(self):
         mu0 = 4*pi*1e-7
         nx, ny, nz = int(self.dim[0]), int(self.dim[1]), 1

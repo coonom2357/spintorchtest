@@ -4,7 +4,7 @@ import os
 import spintorch
 import numpy as np
 from spintorch.utils import tic, toc, stat_cuda
-from spintorch.plot import wave_integrated, wave_snapshot
+from spintorch.plot import wave_integrated, wave_snapshot, geometry
 from Encoding.vecenc import fsk_encode, qam_encode
 from Encoding.randvec import randvec
 from tqdm import tqdm
@@ -23,10 +23,10 @@ Bt = 1e-3       # excitation field amplitude (T)
 
 dt = 20e-12     # timestep (s)
 f1 = 4e9        # source frequency (Hz)
-timesteps = 600 # number of timesteps for wave propagation
+timesteps = 300 # number of timesteps for wave propagation
 
 '''Directories'''
-basedir = 'focus_Ms/'
+basedir = '2x2train/'
 plotdir = 'plots/' + basedir
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
@@ -37,22 +37,22 @@ if not os.path.isdir(savedir):
 '''Geometry, sources, probes, model definitions'''
 ## Here are three geometry modules initialized, just uncomment one of them to try:
 Ms_CoPt = 723e3 # saturation magnetization of the nanomagnets (A/m)
-r0, dr, dm, z_off = 5, 4, 2, 10  # starting pos, period, magnet size, z distance
+r0, dr, dm, z_off = 10, 5, 2, 10  # starting pos, period, magnet size, z distance
 rx, ry = int((nx-2*r0)/dr), int((ny-2*r0)/dr+1)
 print (rx, ry)
-# rho = torch.rand((rx, ry))*4 -2  # Design parameter array
-# geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0, 
-#                                     r0, dr, dm, z_off, rx, ry, Ms_CoPt)
-# # B1 = 50e-3      # training field multiplier (T)
-# # geom = spintorch.WaveGeometryFreeForm((nx, ny), (dx, dy, dz), B0, B1, Ms)
-# # geom = spintorch.WaveGeometryMs((nx, ny), (dx, dy, dz), Ms, B0)
-# src = spintorch.WaveLineSource(10, 0, 10, ny-1, dim=2)
-# probes = []
-# Np = 2  # number of probes
-# for p in range(Np):
-#     probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
-# model = spintorch.MMSolver(geom, dt, [src], probes)
-
+rho = torch.rand((rx, ry))*4 -2  # Design parameter array
+geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0, 
+                                    r0, dr, dm, z_off, rx, ry, Ms_CoPt)
+# B1 = 50e-3      # training field multiplier (T)
+# geom = spintorch.WaveGeometryFreeForm((nx, ny), (dx, dy, dz), B0, B1, Ms)
+# geom = spintorch.WaveGeometryMs((nx, ny), (dx, dy, dz), Ms, B0)
+src = spintorch.WaveLineSource(5, 0, 5, ny-1, dim=2)
+probes = []
+Np = 2  # number of probes
+for p in range(Np):
+    probes.append(spintorch.WaveIntensityProbeDisk(nx-15, int(ny*(p+1)/(Np+1)), 2))
+model = spintorch.MMSolver(geom, dt, [src], probes)
+spintorch.plot.geometry(model, epoch=0, plotdir=plotdir)
 # dev = torch.device('cuda')  # 'cuda' or 'cpu'
 # print('Running on', dev)
 # model.to(dev)   # sending model to GPU/CPU
@@ -103,4 +103,3 @@ print (rx, ry)
 # #             wave_snapshot(model, mz[timesteps-1], (plotdir+f'snapshot_time{timesteps}_epoch{dsize}.png'),r"$m_z$")
 # #             wave_snapshot(model, mz[int(timesteps/2)-1], (plotdir+f'snapshot_time{int(timesteps/2)}_epoch{dsize}.png'),r"$m_z$")
 # #             wave_integrated(model, mz, (plotdir+f'integrated_epoch{dsize}.png'))
-

@@ -3,7 +3,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, CenteredNorm
 from matplotlib.ticker import MaxNLocator
-from .geom import WaveGeometryMs, WaveGeometry
+from .geom import WaveGeometryMs, WaveGeometry, WaveGeometryArray
 from .solver import MMSolver
 
 import warnings
@@ -51,6 +51,20 @@ def _plot_sources(sources, ax):
         markers.append(marker)
     return markers
 
+def _plot_nodes(model, ax):
+    """Plot nanomagnet array nodes (only for WaveGeometryArray)"""
+    markers = []
+    # Only plot nodes if using WaveGeometryArray geometry
+    if not isinstance(model.geom, WaveGeometryArray):
+        return markers
+    
+    for i in range(model.geom.rx):
+        for j in range(model.geom.ry):
+            x, y = model.geom.coordinates(i, j)
+            if model.geom.rho[i, j] < 0:
+                marker, = ax.plot(x, y, '.', markeredgecolor='none', markerfacecolor='b', markersize=2, alpha=0.8)
+                markers.append(marker)
+    return markers
 
 def geometry(model, ax=None, outline=False, outline_pml=True, epoch=0, plotdir=''):
 
@@ -86,6 +100,7 @@ def geometry(model, ax=None, outline=False, outline_pml=True, epoch=0, plotdir='
 
     markers += _plot_probes(probes, ax)
     markers += _plot_sources(sources, ax)
+    markers += _plot_nodes(model.geom, ax)
         
     if plotdir:
         fig.savefig(plotdir+'geometry_epoch%d.png' % (epoch))
@@ -117,4 +132,6 @@ def wave_snapshot(model, m_snap, filename='', clabel='m'):
     if filename:
         fig.savefig(filename)
         plt.close(fig)
+
+
         
