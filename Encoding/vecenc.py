@@ -10,8 +10,8 @@ def fsk_encode(vector, samp_per_symbol=100, freq_min=None, freq_max=None):
     Args:
         vector (list or np.array): Input vector
         samp_per_symbol (int): Samples per symbol/element
-        freq_min (float): Minimum frequency (Hz)
-        freq_max (float): Maximum frequency (Hz)
+        freq_min (None): Minimum frequency (Hz)
+        freq_max (None): Maximum frequency (Hz)
     
     Returns:
         np.array: FSK encoded wave signal

@@ -67,10 +67,25 @@ def display_geometry_from_file(geometry_path):
     except Exception as e:
         print(f"Error loading/displaying geometry: {e}")
 
+def plot_geometry_model(model_path, plot_dir="2x2train/"):
+    """
+    Plot the geometry of the model and save the figure.
+
+    Args:
+        model (spintorch.MMSolver): The MMSolver model containing the geometry.
+        plot_dir (str): Directory to save the plot.
+    """
+    if not os.path.exists(plot_dir):
+        os.makedirs(plot_dir)
+
+    model = torch.load(model_path, map_location='cpu')
+    spintorch.plot.geometry(model, outline=False, plotdir=plot_dir, epoch=0)
+    print(f"Geometry plot saved to {plot_dir}/geometry_epoch0.png")
+
 if __name__ == "__main__":
-    # Try the 2x2train directory first since that's where the files are
-    geometry_path = "2x2train/geometry_rho.pt"
-    plot_dir = "2x2train/"
+    # Try the 2x3train directory first since that's where the files are
+    geometry_path = "2x3train/geometry_rho.pt"
+    plot_dir = "2x3train/"
 
     print("Geometry Display Tool")
     print("====================")
