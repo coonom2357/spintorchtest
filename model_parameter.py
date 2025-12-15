@@ -45,19 +45,19 @@ def model_parameters_init(modelname, dx, dy, dz, nx, ny, Ms, B0, Bt, dt, f1, tim
     with open(f'{modelname}/{modelname}_parameters.json', 'w') as f:
         json.dump(data, f)
     
-def load_model_from_checkpoint(modelname, checkpoint_path):
+def load_model_from_checkpoint(checkpoint_path, parameter_path):
     """
     Reconstruct model from saved parameters and checkpoint.
     
     Args:
-        modelname (str): Name of the model (matches the directory/file name used in model_parameters_init)
         checkpoint_path (str): Path to the checkpoint file (.pt)
+        parameter_path (str): Path to the parameters JSON file
     
     Returns:
         tuple: (model, params) where model is the reconstructed MMSolver and params is the loaded parameters dict
     """
     # Load parameters from JSON
-    with open(f'{modelname}_parameters.json', 'r') as f:
+    with open(parameter_path, 'r') as f:
         params = json.load(f)
     
     # Create geometry with the SAME rx, ry (not randomized)

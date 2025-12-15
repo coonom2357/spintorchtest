@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 
-def plot_input_output_model(model_path, dataset_path, plot_dir, index, device='cuda' if torch.cuda.is_available() else 'cpu'):
+def plot_input_output_model(model, dataset_path, plot_dir, index, device='cuda' if torch.cuda.is_available() else 'cpu'):
     """
     Visualize input and output waves of the model and compare with desired output.
     
@@ -18,7 +18,6 @@ def plot_input_output_model(model_path, dataset_path, plot_dir, index, device='c
     """
     print(f"Running on device: {device}")
     
-    model = torch.load(model_path, map_location=device)
     model.to(device)
     model.eval()  # Set to evaluation mode
     

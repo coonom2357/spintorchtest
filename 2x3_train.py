@@ -106,11 +106,11 @@ timesteps = fsk_dataset.inputs.shape[1]
 num_epochs = 20
 tic()
 
-for epoch in range(epoch_init+1, epoch_init+1+num_epochs):
+for epoch in tqdm(range(epoch_init+1, epoch_init+1+num_epochs), desc="Training", unit="epoch"):
     epoch_loss = 0
     num_batches = 0
     
-    for batch_idx, (inputs, target_outputs, vectors) in tqdm(enumerate(dataloader), total=len(dataloader), desc="Batches", unit="batch"):
+    for batch_idx, (inputs, target_outputs, vectors) in enumerate(dataloader):
         optimizer.zero_grad()
         
         # Process each sample in batch (model expects single samples)
