@@ -23,7 +23,6 @@ Bt = 1e-3       # excitation field amplitude (T)
 
 dt = 20e-12     # timestep (s)
 f1 = 4e9        # source frequency (Hz)
-timesteps = 300 # number of timesteps for wave propagation
 
 '''Create PyTorch Dataset'''
 class FSKDataset(Dataset):
@@ -40,7 +39,7 @@ class FSKDataset(Dataset):
         return self.inputs[idx], self.outputs[idx], self.vectors[idx]
     
 '''Directories'''
-basedir = '2x3train/'
+basedir = '2x3train_w_scheduler/'
 plotdir = 'plots/' + basedir
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
@@ -80,8 +79,10 @@ for name, param in model.named_parameters():
 fsk_dataset = FSKDataset(torch.load('2x3train/fsk_dataset.pt'), dev)
 dataloader = DataLoader(fsk_dataset, batch_size=4, shuffle=True)
 
-'''Define optimizer and loss function'''
+'''Define optimizer, scheduler, and loss function'''
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
 
 def mse_loss(predicted, target):
     """Mean squared error between predicted and target outputs"""
@@ -98,11 +99,14 @@ if epoch_init >= 0:
 else:
     loss_iter = []
 
+'''Calculate Timesteps'''
+timesteps = fsk_dataset.inputs.shape[1]
+
 '''Train the network'''
 num_epochs = 20
 tic()
 
-for epoch in tqdm(range(epoch_init+1, epoch_init+1+num_epochs), desc="Training epochs", unit="epoch"):
+for epoch in range(epoch_init+1, epoch_init+1+num_epochs):
     epoch_loss = 0
     num_batches = 0
     
@@ -134,6 +138,8 @@ for epoch in tqdm(range(epoch_init+1, epoch_init+1+num_epochs), desc="Training e
     # Average epoch loss
     avg_loss = epoch_loss / num_batches
     loss_iter.append(avg_loss)
+    scheduler.step(avg_loss) # Update learning rate based on loss
+
     
     # Plot loss
     spintorch.plot.plot_loss(loss_iter, plotdir)

@@ -26,7 +26,7 @@ f1 = 4e9        # source frequency (Hz)
 timesteps = 300 # number of timesteps for wave propagation
 
 '''Directories'''
-basedir = '2x2train/'
+basedir = '2x3train/'
 plotdir = 'plots/' + basedir
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
