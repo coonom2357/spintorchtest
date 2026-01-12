@@ -23,11 +23,24 @@ class WaveGeometry(nn.Module):
 
 
 class WaveGeometryFreeForm(WaveGeometry):
-    def __init__(self, dim: tuple, d: tuple, B0: float, B1: float, Ms: float):
+    def __init__(self, dim: tuple, d: tuple, B0: float, B1: float, Ms: float, random_init: bool = False, 
+                 init_scale: float = 4.0, x_min: int = None, x_max: int = None, y_min: int = None, y_max: int = None):
 
         super().__init__(dim, d, B0, Ms)
 
+        # Initialize rho
         self.rho = nn.Parameter(zeros(dim))
+        
+        if random_init:
+            # Set default bounds to full domain if not specified
+            x_min = x_min if x_min is not None else 0
+            x_max = x_max if x_max is not None else dim[0]
+            y_min = y_min if y_min is not None else 0
+            y_max = y_max if y_max is not None else dim[1]
+            
+            # Initialize only within the specified region with random values
+            self.rho.data[x_min:x_max, y_min:y_max] = torch.rand((x_max-x_min, y_max-y_min)) * init_scale - init_scale/2
+        
         self.register_buffer("B", zeros((3,)+dim))
         self.register_buffer("B1", tensor(B1))
         self.B[1,] = self.B0

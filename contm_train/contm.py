@@ -17,10 +17,18 @@ dy = 50e-9      # discretization (m)
 dz = 20e-9      # discretization (m)
 nx = 30        # size x    (cells)
 ny = 30        # size y    (cells)
+xmin = 7       # minimum x boundary for region of magnetization
+ymin = 7       # minimum y boundary for region of magnetization
+xmax = nx - xmin  # maximum x boundary for region of magnetization
+ymax = ny - ymin  # maximum y boundary for region of magnetization
 Ms = 140e3      # saturation magnetization (A/m)
 B0 = 60e-3      # bias field (T)
 Bt = 1e-3       # excitation field amplitude (T)
-
+r0 = 5        # source line x-start
+c0 = 0      # source line y-start
+r1 = 5        # source line x-end
+c1 = ny-1    # source line y-end
+dim = 2        # source line dimension
 dt = 20e-12     # timestep (s)
 f1 = 4e9        # source frequency (Hz)
 
@@ -39,7 +47,7 @@ class FSKDataset(Dataset):
         return self.inputs[idx], self.outputs[idx], self.vectors[idx]
     
 '''Directories'''
-basedir = '2x3train_w_scheduler/'
+basedir = 'contm_train'
 plotdir = 'plots/' + basedir
 if not os.path.isdir(plotdir):
     os.makedirs(plotdir)
@@ -49,17 +57,17 @@ if not os.path.isdir(savedir):
 
 '''Geometry, sources, probes, model definitions'''
 ## Here are three geometry modules initialized, just uncomment one of them to try:
-Ms_CoPt = 723e3 # saturation magnetization of the nanomagnets (A/m)
-r0, dr, dm, z_off = 10, 5, 2, 10  # starting pos, period, magnet size, z distance
-rx, ry = int((nx-2*r0)/dr), int((ny-2*r0)/dr+1)
-print (rx, ry)
-rho = torch.rand((rx, ry))*4 -2  # Design parameter array
-geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0, 
-                                    r0, dr, dm, z_off, rx, ry, Ms_CoPt)
-# B1 = 50e-3      # training field multiplier (T)
-# geom = spintorch.WaveGeometryFreeForm((nx, ny), (dx, dy, dz), B0, B1, Ms)
+# Ms_CoPt = 723e3 # saturation magnetization of the nanomagnets (A/m)
+# r0, dr, dm, z_off = 10, 5, 2, 10  # starting pos, period, magnet size, z distance
+# rx, ry = int((nx-2*r0)/dr), int((ny-2*r0)/dr+1)
+# print (rx, ry)
+# rho = torch.rand((rx, ry))*4 -2  # Design parameter array
+# geom = spintorch.WaveGeometryArray(rho, (nx, ny), (dx, dy, dz), Ms, B0, 
+#                                     r0, dr, dm, z_off, rx, ry, Ms_CoPt)
+B1 = 50e-3      # training field multiplier (T)
+geom = spintorch.WaveGeometryFreeForm((nx, ny), (dx, dy, dz), B0, B1, Ms)
 # geom = spintorch.WaveGeometryMs((nx, ny), (dx, dy, dz), Ms, B0)
-src = spintorch.WaveLineSource(5, 0, 5, ny-1, dim=2)
+src = spintorch.WaveLineSource(r0, c0, r1, c1, dim=dim)
 probes = []
 Np = 2  # number of probes
 for p in range(Np):

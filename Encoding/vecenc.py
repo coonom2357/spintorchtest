@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-
-def fsk_encode(vector, samp_per_symbol=100, freq_min=None, freq_max=None):
+def fsk_encode(vector, samp_per_symbol=100, freq_min=None, freq_max=None, timesteps=None):
     """
     Frequency Shift Keying (FSK) encoding of a vector.
     Each vector element maps to a unique frequency.
@@ -12,6 +12,8 @@ def fsk_encode(vector, samp_per_symbol=100, freq_min=None, freq_max=None):
         samp_per_symbol (int): Samples per symbol/element
         freq_min (None): Minimum frequency (Hz)
         freq_max (None): Maximum frequency (Hz)
+        timesteps (int, optional): Desired total timesteps. If greater than generated signal,
+                                    the signal will be repeated to fill timesteps. Default: None (no repeating)
     
     Returns:
         np.array: FSK encoded wave signal
@@ -39,10 +41,16 @@ def fsk_encode(vector, samp_per_symbol=100, freq_min=None, freq_max=None):
         t_segment = t[start_idx:end_idx]
         signal[start_idx:end_idx] = np.sin(2 * np.pi * freq * t_segment)
     
+    # Repeat signal if timesteps is specified and greater than generated signal
+    if timesteps is not None and timesteps > total_samples:
+        num_repeats = (timesteps + total_samples - 1) // total_samples  # Ceiling division
+        signal = np.tile(signal, num_repeats)[:timesteps]
+        t = np.linspace(0, len(vector) * num_repeats, timesteps)
+    
     return signal, t
 
 
-def qam_encode(vector, samp_per_symbol=100, carrier_freq=5):
+def qam_encode(vector, samp_per_symbol=100, carrier_freq=None, timesteps=None):
     """
     Quadrature Amplitude Modulation (QAM) encoding of a vector.
     Encodes vector values into both amplitude and phase of carrier wave.
@@ -51,6 +59,8 @@ def qam_encode(vector, samp_per_symbol=100, carrier_freq=5):
         vector (list or np.array): Input vector
         samp_per_symbol (int): Samples per symbol/element
         carrier_freq (float): Carrier frequency (Hz)
+        timesteps (int, optional): Desired total timesteps. If greater than generated signal,
+                                    the signal will be repeated to fill timesteps. Default: None (no repeating)
     
     Returns:
         np.array: QAM encoded wave signal
@@ -90,15 +100,23 @@ def qam_encode(vector, samp_per_symbol=100, carrier_freq=5):
         signal[start_idx:end_idx] = (I[i] * np.cos(2 * np.pi * carrier_freq * t_segment) - 
                                      Q[i] * np.sin(2 * np.pi * carrier_freq * t_segment))
     
+    # Repeat signal if timesteps is specified and greater than generated signal
+    if timesteps is not None and timesteps > total_samples:
+        num_repeats = (timesteps + total_samples - 1) // total_samples  # Ceiling division
+        signal = np.tile(signal, num_repeats)[:timesteps]
+        t = np.linspace(0, len(vector) * num_repeats, timesteps)
+    
     return signal, t
 
 
-def visualize_vector_encoding(vector):
+def visualize_vector_encoding(vector, plot_dir=None, timesteps=None):
     """
     Visualize the vector and both encoding methods.
     
     Args:
         vector (list or np.array): Input vector
+        plot_dir (str or None): Directory to save the plot. If None, the plot is not saved.
+        timesteps (int, optional): Desired total timesteps for encodings. Default: None
     """
     vector = np.array(vector)
     
@@ -112,7 +130,7 @@ def visualize_vector_encoding(vector):
     ax1.grid(True, alpha=0.3)
     
     # Plot FSK encoding
-    fsk_signal, t_fsk = fsk_encode(vector, freq_min=1, freq_max=10)
+    fsk_signal, t_fsk = fsk_encode(vector, freq_min=1, freq_max=10, timesteps=timesteps)
     ax2.plot(t_fsk, fsk_signal, color='blue', linewidth=0.8)
     ax2.set_title('FSK (Frequency Shift Keying) Encoding')
     ax2.set_xlabel('Time')
@@ -120,13 +138,17 @@ def visualize_vector_encoding(vector):
     ax2.grid(True, alpha=0.3)
     
     # Plot QAM encoding
-    qam_signal, t_qam = qam_encode(vector)
+    qam_signal, t_qam = qam_encode(vector, timesteps=timesteps)
     ax3.plot(t_qam, qam_signal, color='red', linewidth=0.8)
     ax3.set_title('QAM (Quadrature Amplitude Modulation) Encoding')
     ax3.set_xlabel('Time')
     ax3.set_ylabel('Amplitude')
     ax3.grid(True, alpha=0.3)
     
+    if plot_dir is not None:
+        if not os.path.exists(plot_dir):
+            os.makedirs(plot_dir)
+        plt.savefig(os.path.join(plot_dir, "vector_encoding_comparison.png"))
     plt.tight_layout()
     plt.show()
 
@@ -141,12 +163,12 @@ if __name__ == "__main__":
     print("\nEncoding vector...")
     
     # FSK encoding
-    fsk_signal, t_fsk = fsk_encode(test_vector,freq_max=5, freq_min=2)
+    fsk_signal, t_fsk = fsk_encode(test_vector,freq_max=5, freq_min=2, timesteps=100)
     print(f"FSK signal shape: {fsk_signal.shape}")
     
     # QAM encoding
-    qam_signal, t_qam = qam_encode(test_vector)
+    qam_signal, t_qam = qam_encode(test_vector, timesteps=100  )
     print(f"QAM signal shape: {qam_signal.shape}")
     
     # Visualize both encodings
-    visualize_vector_encoding(test_vector)
+    visualize_vector_encoding(test_vector, timesteps=100)

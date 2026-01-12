@@ -3,7 +3,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, CenteredNorm
 from matplotlib.ticker import MaxNLocator
-from .geom import WaveGeometryMs, WaveGeometry, WaveGeometryArray
+from .geom import WaveGeometryMs, WaveGeometry, WaveGeometryArray, WaveGeometryFreeForm
 from .solver import MMSolver
 
 import warnings
@@ -87,6 +87,10 @@ def geometry(model, ax=None, outline=False, outline_pml=True, epoch=0, plotdir='
             Msat = geom.Msat.detach().cpu().numpy().transpose()
             h1 = ax.imshow(Msat, origin="lower", cmap=plt.cm.summer)
             plt.colorbar(h1, ax=ax, label='Saturation magnetization (A/m)')
+        elif isinstance(model.geom, WaveGeometryFreeForm):
+            rho = geom.rho.detach().cpu().numpy().transpose()
+            h1 = ax.imshow(rho, origin="lower", cmap=plt.cm.RdBu_r)
+            plt.colorbar(h1, ax=ax, label='Design parameter (rho)')
         else:
             h1 = ax.imshow(B*1e3, origin="lower", cmap=plt.cm.summer)
             plt.colorbar(h1, ax=ax, label='Magnetic field (mT)')
@@ -94,6 +98,9 @@ def geometry(model, ax=None, outline=False, outline_pml=True, epoch=0, plotdir='
         if isinstance(model.geom, WaveGeometryMs):
             Msat = geom.Msat.detach().cpu().numpy().transpose()
             ax.contour(Msat, levels=1, cmap=plt.cm.Greys, linewidths=[0.75], alpha=1)
+        elif isinstance(model.geom, WaveGeometryFreeForm):
+            rho = geom.rho.detach().cpu().numpy().transpose()
+            ax.contour(rho, levels=1, cmap=plt.cm.Greys, linewidths=[0.75], alpha=1)
         else:
             ax.contour(B, levels=1, cmap=plt.cm.Greys, linewidths=[0.75], alpha=1)
 
